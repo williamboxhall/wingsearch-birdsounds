@@ -27,9 +27,7 @@ jobs:
       run: npm ci
 
     - name: Build application
-      run: |
-        export NODE_OPTIONS="--openssl-legacy-provider"
-        npm run build-prod
+      run: node --openssl-legacy-provider ./node_modules/.bin/ng build --prod --output-path docs --base-href /wingsearch-birdsounds/ --resourcesOutputPath=assets/generated --outputHashing=bundles && cp docs/index.html docs/404.html
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
