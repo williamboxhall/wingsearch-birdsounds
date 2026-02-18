@@ -451,8 +451,35 @@ const reducer = createReducer(
     on(appActions.removeFromPlaylist, (state, action) => {
         const newBirdIds = state.playlist.birdIds.filter(id => id !== action.birdId)
         const wasCurrentSong = state.playlist.currentBirdId === action.birdId
-        const newCurrentIndex = wasCurrentSong ? 0 : state.playlist.currentIndex
-        const newCurrentBirdId = wasCurrentSong ? null : state.playlist.currentBirdId
+
+        // Only affect playback if we removed the currently playing bird
+        let newCurrentIndex = state.playlist.currentIndex
+        let newCurrentBirdId = state.playlist.currentBirdId
+        let newIsPlaying = state.playlist.isPlaying
+
+        if (wasCurrentSong) {
+            // If we removed the currently playing bird
+            if (newBirdIds.length === 0) {
+                // No birds left, stop playback
+                newCurrentIndex = 0
+                newCurrentBirdId = null
+                newIsPlaying = false
+            } else {
+                // Other birds available, move to next bird (or wrap to beginning)
+                newCurrentIndex = Math.min(state.playlist.currentIndex, newBirdIds.length - 1)
+                newCurrentBirdId = newBirdIds[newCurrentIndex]
+                // Keep playing the next bird
+                newIsPlaying = state.playlist.isPlaying
+            }
+        } else {
+            // We removed a different bird, adjust currentIndex if needed
+            const removedIndex = state.playlist.birdIds.indexOf(action.birdId)
+            if (removedIndex < state.playlist.currentIndex) {
+                // Removed bird was before current, shift index down
+                newCurrentIndex = state.playlist.currentIndex - 1
+            }
+            // currentBirdId stays the same, isPlaying stays the same
+        }
 
         cookies.setCookie('playlist.birdIds', JSON.stringify(newBirdIds), 365)
 
@@ -463,7 +490,7 @@ const reducer = createReducer(
                 birdIds: newBirdIds,
                 currentIndex: newCurrentIndex,
                 currentBirdId: newCurrentBirdId,
-                isPlaying: newBirdIds.length === 0 ? false : state.playlist.isPlaying
+                isPlaying: newIsPlaying
             }
         }
     }),
