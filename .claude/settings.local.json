@@ -8,7 +8,13 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(python:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(git stash:*)",
+      "Bash(pkill:*)",
+      "Bash(NODE_OPTIONS=\"--openssl-legacy-provider\" npm start)",
+      "Bash(NODE_OPTIONS=\"--openssl-legacy-provider\" npx ng build)",
+      "WebFetch(domain:github.com)",
+      "Bash(NODE_OPTIONS=\"--openssl-legacy-provider\" npm run build-prod:*)"
     ]
   }
 }
