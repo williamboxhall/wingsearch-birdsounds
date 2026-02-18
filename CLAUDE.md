@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Wingsearch is a web application for searching throughout the Wingspan board game card collection. The app is built with Angular 9 and published as a Progressive Web App at https://navarog.github.io/wingsearch/.
+Wingsearch is a web application for searching throughout the Wingspan board game card collection. The app is built with Angular 9 and published as a Progressive Web App at https://williamboxhall.github.io/wingsearch-birdsounds/.
 
 ## Tech Stack
 

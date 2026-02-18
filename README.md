@@ -1,7 +1,7 @@
 # Wingsearch with Bird Sounds
 Web app for searching throughout the Wingspan card collection, enhanced with authentic bird sound recordings.
 
-The app is published and free to use at https://williamboxhall.github.io/wingsearch/
+The app is published and free to use at https://williamboxhall.github.io/wingsearch-birdsounds/
 
 ## 🎵 New Features
 
