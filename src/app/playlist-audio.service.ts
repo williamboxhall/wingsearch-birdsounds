@@ -18,49 +18,48 @@ export class PlaylistAudioService implements OnDestroy {
   }
 
   private initializeService(): void {
-    // Subscribe to playlist state changes only
-    this.storeSubscription = this.store.select(({ app }) => app.playlist).subscribe(playlist => {
-      // Get full app state when playlist changes
-      this.store.select(({ app }) => app).subscribe(fullState => {
-        this.handleStateChange(fullState)
-      }).unsubscribe()
+    // Subscribe to specific playlist properties that should trigger audio changes
+    this.storeSubscription = this.store.select(({ app }) => ({
+      isPlaying: app.playlist.isPlaying,
+      currentBirdId: app.playlist.currentBirdId,
+      volume: app.playlist.volume,
+      birdCards: app.birdCards
+    })).subscribe(({ isPlaying, currentBirdId, volume, birdCards }) => {
+      // Only handle changes that actually affect playback
+      this.handlePlaybackChange({ isPlaying, currentBirdId, volume, birdCards })
     })
   }
 
-  private handleStateChange(state: AppState): void {
-    const playlist = state.playlist
-
+  private handlePlaybackChange(state: { isPlaying: boolean, currentBirdId: number | null, volume: number, birdCards: any[] }): void {
     // Handle play/pause state changes
-    if (playlist.isPlaying) {
-      if (!this.audioElement || playlist.currentBirdId !== this.currentBirdCard?.id) {
+    if (state.isPlaying) {
+      if (!this.audioElement || state.currentBirdId !== this.currentBirdCard?.id) {
         // Start playing new song or resume from stopped state
         this.playCurrentSong(state)
       } else if (this.audioElement.paused) {
         // Resume paused audio
         this.resumeAudio()
       }
-    } else if (!playlist.isPlaying) {
+    } else if (!state.isPlaying) {
       // Stop playback
       this.stopAudio()
     }
 
     // Handle volume changes
-    if (this.audioElement && this.audioElement.volume !== playlist.volume) {
-      this.audioElement.volume = playlist.volume
+    if (this.audioElement && this.audioElement.volume !== state.volume) {
+      this.audioElement.volume = state.volume
     }
   }
 
-  private playCurrentSong(state: AppState): void {
-    const playlist = state.playlist
-
-    if (playlist.birdIds.length === 0 || playlist.currentBirdId === null) {
+  private playCurrentSong(state: { isPlaying: boolean, currentBirdId: number | null, volume: number, birdCards: any[] }): void {
+    if (state.currentBirdId === null) {
       this.store.dispatch(appActions.stopPlaylist())
       return
     }
 
     // Find the current bird card - only look in actual bird cards since bonuses don't have recordings
     const currentBirdCard = state.birdCards
-      .find(card => card.id === playlist.currentBirdId)
+      .find(card => card.id === state.currentBirdId)
 
     if (!currentBirdCard || !currentBirdCard.recordings || currentBirdCard.recordings.length === 0) {
       // Skip to next song if current bird has no recordings
@@ -68,10 +67,14 @@ export class PlaylistAudioService implements OnDestroy {
       return
     }
 
-    this.currentBirdCard = currentBirdCard
-
-    // Stop any currently playing audio
-    this.stopAudio()
+    // Only stop current audio if we're switching to a different bird
+    if (this.currentBirdCard?.id !== currentBirdCard.id) {
+      this.stopAudio()
+      this.currentBirdCard = currentBirdCard
+    } else {
+      // Same bird, don't restart audio
+      return
+    }
 
     // Select a random recording from the current bird
     const randomIndex = Math.floor(Math.random() * currentBirdCard.recordings.length)
@@ -86,7 +89,7 @@ export class PlaylistAudioService implements OnDestroy {
       if (this.audioElement) {
         this.audioElement.play().then(() => {
           // Start volume fade-in after playback begins
-          this.fadeInVolume(playlist.volume)
+          this.fadeInVolume(state.volume)
         }).catch(error => {
           console.warn('Playlist audio playback failed:', error)
           // Skip to next song on playback failure
