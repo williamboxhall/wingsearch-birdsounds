@@ -1,0 +1,50 @@
+<div class="playlist-container">
+  <div class="playlist-list">
+    <div
+      *ngFor="let bird of playlistBirds$ | async"
+      class="bird-list-item"
+      [class.currently-playing]="isCurrentlyPlaying(bird.id, currentBirdId$ | async)">
+
+      <!-- Currently Playing Indicator -->
+      <mat-icon
+        class="playing-indicator"
+        *ngIf="isCurrentlyPlaying(bird.id, currentBirdId$ | async)">
+        volume_up
+      </mat-icon>
+      <picture class="beak-icon" *ngIf="!isCurrentlyPlaying(bird.id, currentBirdId$ | async)">
+        <source type="image/webp" [srcset]="'assets/icons/png/beak_pointing_' + getBeakDirection(bird) + '.webp'">
+        <source type="image/png" [srcset]="'assets/icons/png/beak_pointing_' + getBeakDirection(bird) + '.png'">
+        <img
+          [src]="'assets/icons/png/beak_pointing_' + getBeakDirection(bird) + '.png'"
+          [alt]="bird['Common name'] + ' beak icon'">
+      </picture>
+
+      <!-- Bird Info (clickable to play) -->
+      <div class="bird-info clickable" (click)="playBird(bird.id)">
+        <div class="bird-name">{{ bird['Common name'] }}</div>
+        <div class="scientific-name">{{ bird['Scientific name'] }}</div>
+      </div>
+
+      <!-- Recording Count -->
+      <div class="recording-count" *ngIf="bird.recordings">
+        {{ bird.recordings.length }} recording{{ bird.recordings.length !== 1 ? 's' : '' }}
+      </div>
+
+      <!-- Remove Button -->
+      <button
+        mat-icon-button
+        class="remove-button"
+        (click)="removeFromPlaylist(bird.id)"
+        matTooltip="Remove from playlist">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="(playlistBirds$ | async)?.length === 0">
+    <mat-icon class="empty-icon">queue_music</mat-icon>
+    <h3>Your playlist is empty</h3>
+    <p>Click on bird cards to add them to your playlist</p>
+  </div>
+</div>
