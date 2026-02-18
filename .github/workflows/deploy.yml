@@ -27,7 +27,7 @@ jobs:
       run: npm ci
 
     - name: Build application
-      run: ng build --prod --base-href /wingsearch-birdsounds/ --resourcesOutputPath=assets/generated --outputHashing=bundles
+      run: npx ng build --prod --base-href /wingsearch-birdsounds/ --resourcesOutputPath=assets/generated --outputHashing=bundles
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
